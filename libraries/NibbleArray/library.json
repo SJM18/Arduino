@@ -1,6 +1,6 @@
 {
   "name": "NibbleArray",
-  "keywords": "4bit nibble nybble array compact",
+  "keywords": "4bit,nibble,nybble,array,compact,compression",
   "description": "Library to implement a compact array of nibbles (4 bit).",
   "authors":
   [
@@ -15,6 +15,7 @@
     "type": "git",
     "url": "https://github.com/RobTillaart/Arduino.git"
   },
+  "version":"0.1.0",
   "frameworks": "arduino",
   "platforms": "*",
   "export": {

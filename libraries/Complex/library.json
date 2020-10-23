@@ -1,6 +1,6 @@
 {
   "name": "Complex",
-  "keywords": "Complex numbers Imaginary phase modulus polar conjugate",
+  "keywords": "Complex,numbers,Imaginary,phase,modulus,polar,conjugate,math,sin,cos,tan,exp,pow",
   "description": "Library for Complex math.",
   "authors":
   [
@@ -15,6 +15,7 @@
     "type": "git",
     "url": "https://github.com/RobTillaart/Arduino.git"
   },
+  "version":"0.1.12",
   "frameworks": "arduino",
   "platforms": "*",
   "export": {

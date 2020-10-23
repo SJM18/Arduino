@@ -1,6 +1,6 @@
 {
   "name": "MAX31855",
-  "keywords": "MAX31855 Thermocouple",
+  "keywords": "MAX31855,Thermocouple,K,temperature",
   "description": "Library for MAX31855 Thermocouple.",
   "authors":
   [
@@ -15,6 +15,7 @@
     "type": "git",
     "url": "https://github.com/RobTillaart/Arduino.git"
   },
+  "version":"0.1.10",
   "frameworks": "arduino",
   "platforms": "*",
   "export": {

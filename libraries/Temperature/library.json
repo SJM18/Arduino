@@ -1,6 +1,6 @@
 {
   "name": "Temperature",
-  "keywords": "Temperature Kelvin Celsius Fahrenheit dewPoint humidex heatIndex",
+  "keywords": "Temperature,Kelvin,Celsius,Fahrenheit,dewPoint,humidex,heatIndex",
   "description": "Library with weather related functions.",
   "authors":
   [
@@ -15,6 +15,7 @@
     "type": "git",
     "url": "https://github.com/RobTillaart/Arduino.git"
   },
+  "version":"0.1.1",
   "frameworks": "arduino",
   "platforms": "*",
   "export": {

@@ -1,7 +1,7 @@
 //
 //    FILE: countdown_demo2.ino
 //  AUTHOR: Rob Tillaart
-// VERSION: 0.1.00
+// VERSION: 0.1.0
 // PURPOSE: demo
 //    DATE: 2015-10-28
 //     URL: http://forum.arduino.cc/index.php?topic=356253
@@ -16,8 +16,9 @@ CountDown CD[5];
 void setup()
 {
     Serial.begin(115200);
-    Serial.print("Start ");
     Serial.println(__FILE__);
+    Serial.print("COUNTDOWN_LIB_VERSION: ");
+    Serial.println(COUNTDOWN_LIB_VERSION);
 
     for (int i = 0; i < 5; i++)
     {

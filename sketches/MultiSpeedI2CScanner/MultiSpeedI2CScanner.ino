@@ -1,38 +1,46 @@
 //
 //    FILE: MultiSpeedI2CScanner.ino
 //  AUTHOR: Rob Tillaart
-// VERSION: 0.1.06
-// PURPOSE: I2C scanner @different speeds
+// VERSION: 0.1.11
+// PURPOSE: I2C scanner at different speeds
 //    DATE: 2013-11-05
+//     URL: https://github.com/RobTillaart/MultiSpeedI2CScanner
 //     URL: http://forum.arduino.cc/index.php?topic=197360
 //
-// Released to the public domain
-//
 
-#include <Wire.h>
 #include <Arduino.h>
+#include <Wire.h>
 
-const char version[] = "0.1.06";
+TwoWire *wi;
+
+const char version[] = "0.1.11";
+
+
+// INTERFACE COUNT (TESTED TEENSY 3.5 AND ARDUINO DUE ONLY)
+int wirePortCount = 1;
+int selectedWirePort = 0;
+
 
 // scans devices from 50 to 800KHz I2C speeds.
-// lower than 50 is not possible
-// DS3231 RTC works on 800 KHz. TWBR = 2; (?)
-const long allSpeed[] = {
-  50, 100, 200, 250, 400, 500, 800
-};
-long speed[sizeof(allSpeed) / sizeof(allSpeed[0])];
+// speed lower than 50 and above 400 can cause problems
+long speed[10] = { 100, 200, 300, 400 };
 int speeds;
 
 int addressStart = 0;
 int addressEnd = 127;
 
+
 // DELAY BETWEEN TESTS
+#ifndef RESTORE_LATENCY
 #define RESTORE_LATENCY  5    // for delay between tests of found devices.
+#endif
 bool delayFlag = false;
+
 
 // MINIMIZE OUTPUT
 bool printAll = true;
 bool header = true;
+bool disableIRQ = false;
 
 // STATE MACHINE
 enum states {
@@ -40,23 +48,78 @@ enum states {
 };
 states state = STOP;
 
+
+// TIMING
 uint32_t startScan;
 uint32_t stopScan;
+
 
 void setup()
 {
   Serial.begin(115200);
+
+#if defined (ESP8266) || defined(ESP32)
+  uint8_t sda = 21;
+  uint8_t scl = 22;
+  Wire.begin(sda, scl, 100000);  // ESP32 - change config pins if needed.
+#else
   Wire.begin();
-  setSpeed('0');
+#endif
+
+#if defined WIRE_IMPLEMENT_WIRE1 || WIRE_INTERFACES_COUNT > 1
+  Wire1.begin();
+  wirePortCount++;
+#endif
+#if defined WIRE_IMPLEMENT_WIRE2 || WIRE_INTERFACES_COUNT > 2
+  Wire2.begin();
+  wirePortCount++;
+#endif
+#if defined WIRE_IMPLEMENT_WIRE3 || WIRE_INTERFACES_COUNT > 3
+  Wire3.begin();
+  wirePortCount++;
+#endif
+
+  wi = &Wire;
+
+  Serial.println();
+  setSpeed('9');
   displayHelp();
 }
 
-
 void loop()
 {
+  yield();
   char command = getCommand();
   switch (command)
   {
+    case '@':
+      selectedWirePort = (selectedWirePort + 1) % wirePortCount;
+      Serial.print(F("<I2C PORT=Wire"));
+      Serial.print(selectedWirePort);
+      Serial.println(F(">"));
+      switch (selectedWirePort)
+      {
+        case 0:
+          wi = &Wire;
+          break;
+#if defined WIRE_IMPLEMENT_WIRE1 || WIRE_INTERFACES_COUNT > 1
+        case 1:
+          wi = &Wire1;
+          break;
+#endif
+#if defined WIRE_IMPLEMENT_WIRE2 || WIRE_INTERFACES_COUNT > 2
+        case 2:
+          wi = &Wire2;
+          break;
+#endif
+#if defined WIRE_IMPLEMENT_WIRE3 || WIRE_INTERFACES_COUNT > 3
+        case 3:
+          wi = &Wire3;
+          break;
+#endif
+      }
+      break;
+
     case 's':
       state = ONCE;
       break;
@@ -83,12 +146,22 @@ void loop()
       Serial.print(F("<print="));
       Serial.println(printAll ? F("all>") : F("found>"));
       break;
+    case 'i':
+      disableIRQ = !disableIRQ;
+      Serial.print(F("<irq="));
+      Serial.println(disableIRQ ? F("diabled>") : F("enabled>"));
+      break;
 
     case '0':
     case '1':
     case '2':
     case '4':
     case '8':
+    case '9':
+    case 'M':
+    case 'N':
+    case 'O':
+    case 'P':
       setSpeed(command);
       break;
 
@@ -124,7 +197,6 @@ void loop()
       break;
   }
 }
-
 
 void setAddress()
 {
@@ -166,14 +238,44 @@ void setSpeed(char sp)
       speed[0] = 800;
       speeds = 1;
       break;
-    case '0':  // reset
-      speeds = sizeof(allSpeed) / sizeof(allSpeed[0]);
-      for (int i = 0; i < speeds; i++)
-      {
-        speed[i] = allSpeed[i];
-      }
+    case '9':  // limited to 400KHz
+      speeds = 8;
+      for (int i = 1; i <= speeds; i++) speed[i - 1] = i * 50;
+      break;
+    case '0':  // limited to 800KHz
+      speeds = 8;
+      for (int i = 1; i <= speeds; i++) speed[i - 1] = i * 100;
+      break;
+
+    // new in 0.1.10 - experimental
+    case 'M':
+      speed[0] = 1000;
+      speeds = 1;
+      break;
+    case 'N':
+      speed[0] = 3400;
+      speeds = 1;
+      break;
+    case 'O':
+      speed[0] = 5000;
+      speeds = 1;
+      break;
+    case 'P':
+      speed[0] = 100;
+      speed[1] = 400;
+      speed[2] = 1000;
+      speed[3] = 3400;
+      speed[4] = 5000;
+      speeds = 5;
       break;
   }
+  Serial.print("<speeds =");
+  for (int i = 0; i < speeds; i++)
+  {
+    Serial.print(' ');
+    Serial.print(speed[i]);
+  }
+  Serial.println(" >");
 }
 
 char getCommand()
@@ -188,33 +290,50 @@ char getCommand()
 
 void displayHelp()
 {
-  Serial.print(F("\nArduino I2C Scanner - "));
+  Serial.print(F("\nArduino MultiSpeed I2C Scanner - "));
   Serial.println(version);
   Serial.println();
-  Serial.println(F("Scanmode:"));
+  Serial.print(F("I2C ports: "));
+  Serial.print(wirePortCount);
+  Serial.print(F("  Current: Wire"));
+  Serial.println(selectedWirePort);
+  Serial.println(F("\t@ = toggle Wire - Wire1 - Wire2 [TEENSY 3.5 or Arduino Due]"));
+
+  Serial.println(F("Scan mode:"));
   Serial.println(F("\ts = single scan"));
   Serial.println(F("\tc = continuous scan - 1 second delay"));
   Serial.println(F("\tq = quit continuous scan"));
   Serial.println(F("\td = toggle latency delay between successful tests. 0 - 5 ms"));
+  Serial.println(F("\ti = toggle enable/disable interrupts"));
+
   Serial.println(F("Output:"));
   Serial.println(F("\tp = toggle printAll - printFound."));
   Serial.println(F("\th = toggle header - noHeader."));
   Serial.println(F("\ta = toggle address range, 0..127 - 8..120"));
+
   Serial.println(F("Speeds:"));
-  Serial.println(F("\t0 = 50 - 800 Khz"));
-  Serial.println(F("\t1 = 100 KHz only"));
-  Serial.println(F("\t2 = 200 KHz only"));
-  Serial.println(F("\t4 = 400 KHz only"));
-  Serial.println(F("\t8 = 800 KHz only"));
+  Serial.println(F("\t0 = 100..800 Khz - step 100  (warning - can block!!)"));
+  Serial.println(F("\t1 = 100 KHz"));
+  Serial.println(F("\t2 = 200 KHz"));
+  Serial.println(F("\t4 = 400 KHz"));
+  Serial.println(F("\t9 = 50..400 Khz - step 50     < DEFAULT >"));
+  Serial.println();
+  Serial.println(F("\t!! HIGH SPEEDS - WARNING - can block - not applicable for UNO"));
+  Serial.println(F("\t8 =  800 KHz"));
+  Serial.println(F("\tM = 1000 KHz"));
+  Serial.println(F("\tN = 3400 KHz"));
+  Serial.println(F("\tO = 5000 Khz"));
+  Serial.println(F("\tP = 100 400 1000 3400 5000 Khz (standards)"));
   Serial.println(F("\n\t? = help - this page"));
   Serial.println();
 }
-
 
 void I2Cscan()
 {
   startScan = millis();
   uint8_t count = 0;
+
+  if (disableIRQ) noInterrupts();
 
   if (header)
   {
@@ -232,18 +351,6 @@ void I2Cscan()
     Serial.println();
   }
 
-  // TEST
-  // 0.1.04: tests only address range 8..120
-  // --------------------------------------------
-  // Address	R/W Bit	Description
-  // 0000 000   0	General call address
-  // 0000 000   1	START byte
-  // 0000 001   X	CBUS address
-  // 0000 010   X	reserved - different bus format
-  // 0000 011   X	reserved - future purposes
-  // 0000 1XX   X	High Speed master code
-  // 1111 1XX   X	reserved - future purposes
-  // 1111 0XX   X	10-bit slave addressing
   for (uint8_t address = addressStart; address <= addressEnd; address++)
   {
     bool printLine = printAll;
@@ -252,13 +359,22 @@ void I2Cscan()
 
     for (uint8_t s = 0; s < speeds ; s++)
     {
-#if ARDUINO >= 158
-      Wire.setClock(speed[s] * 1000);
-#else
+      yield();    // keep ESP happy 
+
+#if ARDUINO < 158 && defined (TWBR)
+      uint16_t PREV_TWBR = TWBR;
       TWBR = (F_CPU / (speed[s] * 1000) - 16) / 2;
+      if (TWBR < 2)
+      {
+        Serial.println("ERROR: not supported speed");
+        TWBR = PREV_TWBR;
+        return; 
+      }
+#else
+      wi->setClock(speed[s] * 1000UL);
 #endif
-      Wire.beginTransmission (address);
-      found[s] = (Wire.endTransmission () == 0);
+      wi->beginTransmission (address);
+      found[s] = (wi->endTransmission () == 0);
       fnd |= found[s];
       // give device 5 millis
       if (fnd && delayFlag) delay(RESTORE_LATENCY);
@@ -295,6 +411,8 @@ void I2Cscan()
     Serial.print(stopScan - startScan);
     Serial.println(F(" milliseconds."));
   }
+  
+  interrupts();
 }
 
-
+// -- END OF FILE --

@@ -1,6 +1,6 @@
 {
   "name": "Radar",
-  "keywords": "Pan tilt",
+  "keywords": "Pan,tilt,radar",
   "description": "Experimental library for a pan tilt radar.",
   "authors":
   [
@@ -15,6 +15,7 @@
     "type": "git",
     "url": "https://github.com/RobTillaart/Arduino.git"
   },
+  "version":"0.1.1",
   "frameworks": "arduino",
   "platforms": "*",
   "export": {

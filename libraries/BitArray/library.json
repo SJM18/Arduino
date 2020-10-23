@@ -1,6 +1,6 @@
 {
   "name": "BitArray",
-  "keywords": "Bit Array Boolean ",
+  "keywords": "Bit,Array,Boolean,bool",
   "description": "Library to make a compact array of objects with a size expressed in bits. typically 1..10",
   "authors":
   [
@@ -15,6 +15,7 @@
     "type": "git",
     "url": "https://github.com/RobTillaart/Arduino.git"
   },
+  "version":"0.1.8",
   "frameworks": "arduino",
   "platforms": "*",
   "export": {

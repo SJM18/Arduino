@@ -1,6 +1,6 @@
 {
   "name": "AnalogPin",
-  "keywords": "analogRead, smooth, analog, noise reduction",
+  "keywords": "analogRead,smooth,analog,pin,noise,reduction",
   "description": "Class for smoothing analogReads.",
   "authors":
   [
@@ -15,6 +15,7 @@
     "type": "git",
     "url": "https://github.com/RobTillaart/Arduino.git"
   },
+  "version":"0.1.4",
   "frameworks": "arduino",
   "platforms": "*",
   "export": {

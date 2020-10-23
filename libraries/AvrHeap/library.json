@@ -1,6 +1,6 @@
 {
   "name": "Avrheap",
-  "keywords": "heap dump walk free list ",
+  "keywords": "heap,dump,walk,free,list,debug,analyze",
   "description": "Library to runtime analyze the structure of the heap (AVR328).",
   "authors":
   [
@@ -15,6 +15,7 @@
     "type": "git",
     "url": "https://github.com/RobTillaart/Arduino.git"
   },
+  "version":"0.1.5",
   "frameworks": "arduino",
   "platforms": "atmelavr",
   "export": {

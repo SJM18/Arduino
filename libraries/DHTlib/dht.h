@@ -1,7 +1,7 @@
     //
 //    FILE: dht.h
 //  AUTHOR: Rob Tillaart
-// VERSION: 0.1.21
+// VERSION: 0.1.29
 // PURPOSE: DHT Temperature & Humidity Sensor library for Arduino
 //     URL: http://arduino.cc/playground/Main/DHTLib
 //
@@ -19,7 +19,7 @@
 #include <Arduino.h>
 #endif
 
-#define DHT_LIB_VERSION "0.1.21"
+#define DHT_LIB_VERSION "0.1.29"
 
 #define DHTLIB_OK                   0
 #define DHTLIB_ERROR_CHECKSUM       -1
@@ -48,7 +48,7 @@
 class dht
 {
 public:
-    dht() {};
+    dht() { _disableIRQ = false; };
     // return values:
     // DHTLIB_OK
     // DHTLIB_ERROR_CHECKSUM
@@ -58,18 +58,28 @@ public:
     // DHTLIB_ERROR_ACK_H
     int8_t read11(uint8_t pin);
     int8_t read(uint8_t pin);
+    int8_t read12(uint8_t pin);
 
-    inline int8_t read21(uint8_t pin) { return read(pin); };
-    inline int8_t read22(uint8_t pin) { return read(pin); };
-    inline int8_t read33(uint8_t pin) { return read(pin); };
-    inline int8_t read44(uint8_t pin) { return read(pin); };
+    inline int8_t read21(uint8_t pin)   { return read(pin); };
+    inline int8_t read22(uint8_t pin)   { return read(pin); };
+    inline int8_t read33(uint8_t pin)   { return read(pin); };
+    inline int8_t read44(uint8_t pin)   { return read(pin); };
+    inline int8_t read2301(uint8_t pin) { return read(pin); };
+    inline int8_t read2302(uint8_t pin) { return read(pin); };
+    inline int8_t read2303(uint8_t pin) { return read(pin); };
+    inline int8_t read2320(uint8_t pin) { return read(pin); };
+    inline int8_t read2322(uint8_t pin) { return read(pin); };
+    
+    bool getDisableIRQ()                { return _disableIRQ; };
+    void setDisableIRQ(bool b )         { _disableIRQ = b; };
 
-    double humidity;
-    double temperature;
+    float humidity;
+    float temperature;
 
 private:
     uint8_t bits[5];  // buffer to receive data
     int8_t _readSensor(uint8_t pin, uint8_t wakeupDelay, uint8_t leadingZeroBits);
+    bool   _disableIRQ;
 };
 #endif
 //

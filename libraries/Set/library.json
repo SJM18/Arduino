@@ -1,6 +1,6 @@
 {
   "name": "Set",
-  "keywords": "Set union diff intersection equal subset",
+  "keywords": "Set,union,diff,intersection,equal,subset",
   "description": "Library to implement SET datastructure.",
   "authors":
   [
@@ -15,6 +15,7 @@
     "type": "git",
     "url": "https://github.com/RobTillaart/Arduino.git"
   },
+  "version":"0.1.11",
   "frameworks": "arduino",
   "platforms": "*",
   "export": {

@@ -1,7 +1,7 @@
 //
 //    FILE: I2C_eeprom.cpp
 //  AUTHOR: Rob Tillaart
-// VERSION: 1.2.03
+// VERSION: 1.2.7
 // PURPOSE: I2C_eeprom library for Arduino with EEPROM 24LC256 et al.
 //
 // HISTORY:
@@ -24,6 +24,10 @@
 // 1.2.01 - 2014-05-21 Refactoring
 // 1.2.02 - 2015-03-06 stricter interface
 // 1.2.03 - 2015-05-15 bugfix in _pageBlock & example (thanks ifreislich )
+// 1.2.4 - 2017-04-19 remove timeout - issue #63
+// 1.2.5 - 2017-04-20 refactor the removed timeout (Thanks to Koepel)
+// 1.2.6 - 2019-02-01 fix issue #121
+// 1.2.7 - 2019-09-03 fix issue #113 and #128
 //
 // Released to the public domain
 //
@@ -118,7 +122,11 @@ uint16_t I2C_eeprom::readBlock(const uint16_t memoryAddress, uint8_t* buffer, co
     uint16_t rv = 0;
     while (len > 0)
     {
+#if defined(ESP8266) || defined(ESP32) //  || defined(...)
+        uint8_t cnt = _min(len, I2C_TWIBUFFERSIZE);
+#else
         uint8_t cnt = min(len, I2C_TWIBUFFERSIZE);
+#endif
         rv += _ReadBlock(addr, buffer, cnt);
         addr += cnt;
         buffer += cnt;
@@ -183,12 +191,17 @@ int I2C_eeprom::_pageBlock(const uint16_t memoryAddress, const uint8_t* buffer, 
 {
     uint16_t addr = memoryAddress;
     uint16_t len = length;
-    int rv = 0;
     while (len > 0)
     {
         uint8_t bytesUntilPageBoundary = this->_pageSize - addr % this->_pageSize;
+
+#if defined(ESP8266) || defined(ESP32) //  || defined(...)
+        uint8_t cnt = _min(len, bytesUntilPageBoundary);
+        cnt = _min(cnt, I2C_TWIBUFFERSIZE);
+#else
         uint8_t cnt = min(len, bytesUntilPageBoundary);
         cnt = min(cnt, I2C_TWIBUFFERSIZE);
+#endif
 
         int rv = _WriteBlock(addr, buffer, cnt);
         if (rv != 0) return rv;
@@ -197,7 +210,7 @@ int I2C_eeprom::_pageBlock(const uint16_t memoryAddress, const uint8_t* buffer, 
         if (incrBuffer) buffer += cnt;
         len -= cnt;
     }
-    return rv;
+    return 0;
 }
 
 // supports one and 2 bytes addresses
@@ -220,10 +233,10 @@ int I2C_eeprom::_WriteBlock(const uint16_t memoryAddress, const uint8_t* buffer,
     waitEEReady();
 
     this->_beginTransmission(memoryAddress);
-
     WIRE_WRITE(buffer, length);
-
     int rv = Wire.endTransmission();
+
+
     _lastWrite = micros();
     return rv;
 }
@@ -239,14 +252,14 @@ uint8_t I2C_eeprom::_ReadBlock(const uint16_t memoryAddress, uint8_t* buffer, co
     int rv = Wire.endTransmission();
     if (rv != 0) return 0;  // error
 
-    Wire.requestFrom(_deviceAddress, length);
+    // readbytes will always be equal or smaller to length
+    uint8_t readBytes = Wire.requestFrom(_deviceAddress, length);
     uint8_t cnt = 0;
-    uint32_t before = millis();
-    while ((cnt < length) && ((millis() - before) < I2C_EEPROM_TIMEOUT))
+    while (cnt < readBytes)
     {
-        if (Wire.available()) buffer[cnt++] = WIRE_READ();
+        buffer[cnt++] = WIRE_READ();
     }
-    return cnt;
+    return readBytes;
 }
 
 void I2C_eeprom::waitEEReady()
@@ -260,6 +273,7 @@ void I2C_eeprom::waitEEReady()
         Wire.beginTransmission(_deviceAddress);
         int x = Wire.endTransmission();
         if (x == 0) break;
+        yield();
     }
 }
 

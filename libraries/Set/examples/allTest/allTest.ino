@@ -1,7 +1,7 @@
 //
 //    FILE: allTest.ino
 //  AUTHOR: Rob Tillaart
-// VERSION: 0.1.00
+// VERSION: 0.1.3
 // PURPOSE: demo/test Set class
 //    DATE: 2014-11-16
 //     URL:
@@ -41,9 +41,9 @@ void timingTest()
     Set myset;
 
     Serial.println("TIMING TEST");
-    Serial.print("clr():\t");
+    Serial.print("100x clr():\t");
     uint32_t start = micros();
-    myset.clr();
+    for (uint8_t i=0; i<100; i++) myset.clr();
     uint32_t stop = micros();
     Serial.println(stop-start);
 
@@ -89,6 +89,34 @@ void timingTest()
     myset.invert();
     start = micros();
     myset.count();
+    stop = micros();
+    Serial.println(stop-start);
+    Serial.println();
+
+    Serial.print("100x isEmpty(): empty\t");
+    myset.clr();
+    start = micros();
+    for (uint8_t i=0; i<100; i++) b = myset.isEmpty();
+    stop = micros();
+    Serial.println(stop-start);
+    Serial.print("100x isEmpty(): full\t");
+    myset.clr();
+    myset.invert();
+    start = micros();
+    for (uint8_t i=0; i<100; i++) b = myset.isEmpty();
+    stop = micros();
+    Serial.println(stop-start);
+    Serial.print("100x isFull(): empty\t");
+    myset.clr();
+    start = micros();
+    for (uint8_t i=0; i<100; i++) b = myset.isFull();
+    stop = micros();
+    Serial.println(stop-start);
+    Serial.print("100x isFull(): full\t");
+    myset.clr();
+    myset.invert();
+    start = micros();
+    for (uint8_t i=0; i<100; i++) b = myset.isFull();
     stop = micros();
     Serial.println(stop-start);
     Serial.println();

@@ -1,6 +1,6 @@
 {
   "name": "MCP4725",
-  "keywords": "MCP4725 DAC Convertor",
+  "keywords": "MCP4725,DAC,digital,analog,convertor",
   "description": "Library for the MCP4725 DAC.",
   "authors":
   [
@@ -15,6 +15,7 @@
     "type": "git",
     "url": "https://github.com/RobTillaart/Arduino.git"
   },
+  "version":"0.1.9",
   "frameworks": "arduino",
   "platforms": "*",
   "export": {

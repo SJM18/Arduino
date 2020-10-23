@@ -1,7 +1,7 @@
 //
 //    FILE: bitArrayDemo2.ino
 //  AUTHOR: Rob Tillaart
-// VERSION: 0.1.02
+// VERSION: 0.1.03
 // PURPOSE: demo performance reading boolean array
 //    DATE: 2015-12-06
 //     URL: https://forum.arduino.cc/index.php?topic=361167.0
@@ -15,7 +15,7 @@ BitArray b;
 
 uint32_t start;
 uint32_t stop;
-volatile long x = 0;
+volatile int32_t x = 0;
 
 void setup()
 {
@@ -45,7 +45,7 @@ void test(uint8_t bits, uint16_t cnt)
     delay(100);
 
     start = micros();
-    for (int i = 0; i < cnt; i++)
+    for (uint16_t i = 0; i < cnt; i++)
     {
         x += b.get(i);
     }
@@ -55,7 +55,7 @@ void test(uint8_t bits, uint16_t cnt)
     delay(100);
 
     start = micros();
-    for (int i = 0; i < cnt; i++)
+    for (uint16_t i = 0; i < cnt; i++)
     {
         x += b.get(i);
         x += b.get(i);
@@ -68,7 +68,7 @@ void test(uint8_t bits, uint16_t cnt)
     delay(100);
 
     start = micros();
-    for (int i = 0; i < cnt; i++)
+    for (uint16_t i = 0; i < cnt; i++)
     {
         b.set(i, 0);
     }
@@ -78,7 +78,7 @@ void test(uint8_t bits, uint16_t cnt)
     delay(100);
 
     start = micros();
-    for (int i = 0; i < cnt; i++)
+    for (uint16_t i = 0; i < cnt; i++)
     {
         b.set(i, 0);
         b.set(i, 0);

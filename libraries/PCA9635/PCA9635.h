@@ -2,7 +2,7 @@
 //    FILE: PCA9635.H
 //  AUTHOR: Rob Tillaart
 //    DATE: 23-apr-2016
-// VERSION: 0.1.01
+// VERSION: 0.1.2
 // PURPOSE: I2C PCA9635 library for Arduino
 //     URL: https://github.com/RobTillaart/Arduino/tree/master/libraries
 //
@@ -19,7 +19,7 @@
 
 #define PCA9635_MODE1       0x00
 #define PCA9635_MODE2       0x01
-#define PCA9635_PWM(x)      (0x02+(x))
+#define PCA9635_PWM(x)      (0x82+(x))
 
 #define PCA9635_GRPPWM      0x12
 #define PCA9635_GRPFREQ     0x13

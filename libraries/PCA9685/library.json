@@ -1,6 +1,6 @@
 {
   "name": "PCA9685",
-  "keywords": "I2C PCA9685 PWM",
+  "keywords": "I2C,PCA9685,PWM",
   "description": "Library for PCA9685.",
   "authors":
   [
@@ -15,6 +15,7 @@
     "type": "git",
     "url": "https://github.com/RobTillaart/Arduino.git"
   },
+  "version":"0.1.1",
   "frameworks": "arduino",
   "platforms": "*",
   "export": {

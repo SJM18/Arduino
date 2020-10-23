@@ -1,19 +1,15 @@
-#ifndef XML_WRITER_H
-#define XML_WRITER_H
+#pragma once
 //
 //    FILE: XMLWriter.h
 //  AUTHOR: Rob Tillaart
-// VERSION: 0.1.06
+// VERSION: 0.2.2
 //    DATE: 2013-11-06
-// PURPOSE: Simple XML writer library
-//
-// Released to the public domain
+// PURPOSE: Arduino library for creating XML 
 //
 
 #include "Arduino.h"
-// no pre 1.0 support!
 
-#define XMLWRITER_VERSION "0.1.06"
+#define XMLWRITER_VERSION "0.2.2"
 
 // for comment()
 #define NOMULTILINE false
@@ -30,88 +26,129 @@
 
 // deepness of XML tree 5..10
 // needed for stack of tagStack
+#ifndef XMLWRITER_MAXLEVEL
 #define XMLWRITER_MAXLEVEL 5      // adjust for deeper nested structures
-#define XMLWRITER_MAXTAGSIZE 15   // adjust for longer fields - !! eats memory !!
+#endif
+
+#ifndef XMLWRITER_MAXTAGSIZE
+#define XMLWRITER_MAXTAGSIZE 15 // adjust for longer fields - !! eats memory !!
+#endif
 
 // reduce footprint by commenting next line
 #define XMLWRITER_ESCAPE_SUPPORT
 
-class XMLWriter
+// configuration - setConfig
+#define XMLWRITER_NONE		0x00
+#define XMLWRITER_COMMENT	0x01
+#define XMLWRITER_INDENT	0x02
+#define XMLWRITER_NEWLINE	0x04
+
+// uncomment next line to reduce ~30bytes RAM in escape()  (AVR oonly)
+// #define __PROGMEM__
+
+
+class XMLWriter : Print
 {
 public:
-    XMLWriter(Print* stream);
+  // default = Serial
+  XMLWriter(Print* stream = &Serial, uint8_t bufsize = 10);
+  ~XMLWriter();
 
-    void reset();
+  void reset();
 
-    // standard XML header
-    void header();
+  // to show/strip comment, indent, newLine
+  // to minimize the output setConfig(0);
+  void setConfig(uint8_t cfg) { _config = cfg; };
 
-    // if multiline == true it does not indent to allow bigger text blocks
-    // <!-- text -->
-    void comment(char* text, bool multiLine=false);
+  // standard XML header
+  void header();
 
-    // <tag>
-    void tagOpen(char* tag, bool newline=true);
-    // <tag name="name">
-    void tagOpen(char* tag, char* name, bool newline=true);
-    // </tag>
-    void tagClose(bool ind=true);
+  // if multiline == true it does not indent to allow bigger text blocks
+  // <!-- text -->
+  void comment(const char* text, const bool multiLine = false);
 
-    // <tag
-    void tagStart(char* tag);
-    // field="value"
-    void tagField(char* field, char* value);
-    //  />
-    void tagEnd(bool newline=true, bool addSlash=true);
+  // add a number of newlines to the output, default = 1.
+  void newLine(uint8_t n = 1);
 
-    // <tag>value</tag>
-    void writeNode(char* tag, char* value);
+  // <tag>
+  void tagOpen(const char* tag, const bool newline = true);
+  // <tag name="name">
+  void tagOpen(const char* tag, const char* name, const bool newline = true);
+  // </tag>
+  void tagClose(const bool ind = true);
 
-    // typically 0,2,4; default == 2;
-    void setIndentSize(uint8_t size = 2);
+  // <tag
+  void tagStart(const char* tag);
+  // field="value"
+  void tagField(const char* field, const char* value);
+  //  />
+  void tagEnd(const bool newline = true, const bool addSlash = true);
 
-    // for manual layout control
-    void incrIndent()       { _indent += _indentStep; };
-    void decrIndent()       { _indent -= _indentStep; };
-    void indent();
-    void raw(char * str)    { _stream->print(str); };       // TODO Q:other types?
+  // <tag>value</tag>
+  void writeNode(const char* tag, const char* value);
 
-    void tagField(char* field, uint8_t  value, uint8_t base=DEC);
-    void tagField(char* field, uint16_t value, uint8_t base=DEC);
-    void tagField(char* field, uint32_t value, uint8_t base=DEC);
-    void tagField(char* field, int8_t   value, uint8_t base=DEC);
-    void tagField(char* field, int16_t  value, uint8_t base=DEC);
-    void tagField(char* field, int32_t  value, uint8_t base=DEC);
-    void tagField(char *field, bool     value);
-    void tagField(char* field, double   value, uint8_t decimals=2);
+  // typically 0,2,4; default == 2;
+  // multiple of 2;
+  void setIndentSize(const uint8_t size = 2);
 
-    void writeNode(char* tag, uint8_t   value, uint8_t base=DEC);
-    void writeNode(char* tag, uint16_t  value, uint8_t base=DEC);
-    void writeNode(char* tag, uint32_t  value, uint8_t base=DEC);
-    void writeNode(char* tag, int8_t    value, uint8_t base=DEC);
-    void writeNode(char* tag, int16_t   value, uint8_t base=DEC);
-    void writeNode(char* tag, int32_t   value, uint8_t base=DEC);
-    void writeNode(char* tag, bool      value);
-    void writeNode(char* tag, double value, uint8_t decimals=2);
+  // for manual layout control
+  void incrIndent()       { _indent += _indentStep; };
+  void decrIndent()       { _indent -= _indentStep; };
+  void indent();
+  void raw(const char * str) { print(str); };
+
+  void tagField(const char* field, const uint8_t  value, const uint8_t base = DEC);
+  void tagField(const char* field, const uint16_t value, const uint8_t base = DEC);
+  void tagField(const char* field, const uint32_t value, const uint8_t base = DEC);
+  void tagField(const char* field, const int8_t   value, const uint8_t base = DEC);
+  void tagField(const char* field, const int16_t  value, const uint8_t base = DEC);
+  void tagField(const char* field, const int32_t  value, const uint8_t base = DEC);
+  void tagField(const char* field, const bool     value);
+  void tagField(const char* field, const double   value, const uint8_t decimals = 2);
+
+  void writeNode(const char* tag, const uint8_t   value, const uint8_t base = DEC);
+  void writeNode(const char* tag, const uint16_t  value, const uint8_t base = DEC);
+  void writeNode(const char* tag, const uint32_t  value, const uint8_t base = DEC);
+  void writeNode(const char* tag, const int8_t    value, const uint8_t base = DEC);
+  void writeNode(const char* tag, const int16_t   value, const uint8_t base = DEC);
+  void writeNode(const char* tag, const int32_t   value, const uint8_t base = DEC);
+  void writeNode(const char* tag, const bool      value);
+  void writeNode(const char* tag, const double    value, const uint8_t decimals = 2);
 
 #ifdef XMLWRITER_ESCAPE_SUPPORT
-    // expands the special xml chars
-    void escape(char* str);
+  // expands the special xml chars
+  void escape(const char* str);
 #endif
+
+  // One need to call flush() at the end of writing to empty 
+  // the internal buffer.
+  void     flush();
+  
+  // metrics
+  uint8_t  bufferIndex()  { return _bidx; };
+  uint32_t bytesWritten() { return _bytesOut; } ;
 
 private:
-    // outputstream
-    Print* _stream;
+  // outputstream, Print Class
+  Print*   _stream;
+  size_t   write(uint8_t c);
 
-    // for indentation
-    uint8_t _indent;
-    uint8_t _indentStep;
+  // for indentation
+  uint8_t  _indent;
+  uint8_t  _indentStep;
 
-    // stack - used to remember the current tagname to create
-    // automatic the right close tag.
-    uint8_t _idx;
-    char tagStack[XMLWRITER_MAXLEVEL][XMLWRITER_MAXTAGSIZE+1];
+  // configuration
+  uint8_t  _config;
+
+  // stack - used to remember the current tagname to create
+  // automatic the right close tag.
+  uint8_t  _tidx;
+  char     _tagStack[XMLWRITER_MAXLEVEL][XMLWRITER_MAXTAGSIZE + 1];
+
+  char *   _buffer;
+  uint8_t  _bufsize;
+  uint8_t  _bidx;
+  uint32_t _bytesOut;
 };
 
-#endif
-// END OF FILE
+// -- END OF FILE --

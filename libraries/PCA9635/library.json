@@ -1,6 +1,6 @@
 {
   "name": "PCA9635",
-  "keywords": "I2C PCA9635 PWM",
+  "keywords": "I2C,PCA9635,PWM",
   "description": "Library for PCA9635 PWM.",
   "authors":
   [
@@ -15,6 +15,7 @@
     "type": "git",
     "url": "https://github.com/RobTillaart/Arduino.git"
   },
+  "version":"0.1.2",
   "frameworks": "arduino",
   "platforms": "*",
   "export": {
